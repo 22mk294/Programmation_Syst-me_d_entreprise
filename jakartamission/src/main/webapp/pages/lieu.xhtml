@@ -1,70 +1,240 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html">
-    <h:head>
-        <title>Ajouter un Lieu</title>
-        
-        <link rel="stylesheet"
-               href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html" xmlns:f="jakarta.faces.core">
+<h:head>
+    <title>Gestion des Lieux</title>
 
-    </h:head>
-    <h:body class="bg-light">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function fillEditModal(btn) {
+            var id = btn.getAttribute('data-id');
+            var nom = btn.getAttribute('data-nom');
+            var desc = btn.getAttribute('data-desc');
+            var lat = btn.getAttribute('data-lat');
+            var lon = btn.getAttribute('data-lon');
+
+            document.getElementById('editForm:editId').value = id;
+            document.getElementById('editForm:editNom').value = nom;
+            document.getElementById('editForm:editDesc').value = desc;
+            document.getElementById('editForm:editLat').value = lat;
+            document.getElementById('editForm:editLon').value = lon;
+        }
+
+        function prepareDelete(btn) {
+            var id = btn.getAttribute('data-id');
+            document.getElementById('deleteForm:deleteId').value = id;
+        }
+    </script>
+</h:head>
+<h:body class="bg-light">
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
         <div class="container">
-            <a class="navbar-brand fw-bold">UDBL - JSF Mission</a>
+            <a class="navbar-brand fw-bold" href="#">UDBL - JSF Mission</a>
         </div>
     </nav>
 
-    <!-- PAGE -->
+    <!-- PAGE CONTENT -->
     <div class="container mt-5">
 
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-dark">Gestion des Lieux</h2>
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addLieuModal">
+                <i class="bi bi-plus-circle"></i> Ajouter un lieu
+            </button>
+        </div>
+
+        <!-- LISTE DES LIEUX -->
         <div class="card shadow">
-            <div class="card-header bg-danger text-white text-center">
-                <h3 class="fw-bold">Ajouter un lieu</h3>
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold text-secondary">Liste des lieux enregistrés</h5>
             </div>
 
-            <div class="card-body">
+            <div class="card-body p-0">
+                <h:dataTable value="#{lieuBean.lieux}" var="lieu" styleClass="table table-striped table-hover mb-0"
+                    headerClass="table-light text-secondary">
 
-                <h:form>
+                    <h:column>
+                        <f:facet name="header">ID</f:facet>
+                        #{lieu.id}
+                    </h:column>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nom du lieu</label>
-                        <h:inputText value="#{lieuBean.nom}" styleClass="form-control" required="true"/>
-                    </div>
+                    <h:column>
+                        <f:facet name="header">Nom</f:facet>
+                        <span class="fw-bold">#{lieu.nom}</span>
+                    </h:column>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Description</label>
-                        <h:inputTextarea value="#{lieuBean.description}" rows="3" styleClass="form-control"/>
-                    </div>
+                    <h:column>
+                        <f:facet name="header">Description</f:facet>
+                        #{lieu.description}
+                    </h:column>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Latitude</label>
-                            <h:inputText value="#{lieuBean.latitude}" styleClass="form-control" required="true"/>
-                        </div>
+                    <h:column>
+                        <f:facet name="header">Position</f:facet>
+                        <span class="badge bg-info text-dark">#{lieu.latitude}, #{lieu.longitude}</span>
+                    </h:column>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Longitude</label>
-                            <h:inputText value="#{lieuBean.longitude}" styleClass="form-control" required="true"/>
-                        </div>
-                    </div>
+                    <h:column>
+                        <f:facet name="header">Actions</f:facet>
+                        <!-- Edit Button -->
+                        <button type="button" class="btn btn-outline-danger btn-sm me-2" data-bs-toggle="modal"
+                            data-bs-target="#editLieuModal" data-id="#{lieu.id}" data-nom="#{lieu.nom}"
+                            data-desc="#{lieu.description}" data-lat="#{lieu.latitude}" data-lon="#{lieu.longitude}"
+                            onclick="fillEditModal(this)" title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </button>
 
-                    <h:commandButton value="Enregistrer"
-                                     action="#{lieuBean.enregistrerLieu}"
-                                     styleClass="btn btn-danger px-4"/>
+                        <!-- Delete Button -->
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#deleteLieuModal" data-id="#{lieu.id}" onclick="prepareDelete(this)"
+                            title="Supprimer">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </h:column>
 
-                    
-
-                </h:form>
-
+                </h:dataTable>
             </div>
         </div>
 
     </div>
 
+    <!-- ADD LIEU MODAL -->
+    <div class="modal fade" id="addLieuModal" tabindex="-1" aria-labelledby="addLieuModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="addLieuModalLabel">Nouveau Lieu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <h:form id="addForm">
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nom du lieu</label>
+                            <h:inputText value="#{lieuBean.nom}" styleClass="form-control" required="true"
+                                requiredMessage="Le nom est requis" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Description</label>
+                            <h:inputTextarea value="#{lieuBean.description}" rows="3" styleClass="form-control" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Latitude</label>
+                                <h:inputText value="#{lieuBean.latitude}" styleClass="form-control" required="true" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Longitude</label>
+                                <h:inputText value="#{lieuBean.longitude}" styleClass="form-control" required="true" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <h:commandButton value="Enregistrer" action="#{lieuBean.ajouterLieux()}"
+                            styleClass="btn btn-danger" />
+                    </div>
+                </h:form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT LIEU MODAL -->
+    <div class="modal fade" id="editLieuModal" tabindex="-1" aria-labelledby="editLieuModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="editLieuModalLabel">Modifier un Lieu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <h:form id="editForm">
+                    <h:inputHidden id="editId" value="#{lieuBean.id}" />
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nom du lieu</label>
+                            <h:inputText id="editNom" value="#{lieuBean.nom}" styleClass="form-control"
+                                required="true" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Description</label>
+                            <h:inputTextarea id="editDesc" value="#{lieuBean.description}" rows="3"
+                                styleClass="form-control" />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Latitude</label>
+                                <h:inputText id="editLat" value="#{lieuBean.latitude}" styleClass="form-control"
+                                    required="true" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Longitude</label>
+                                <h:inputText id="editLon" value="#{lieuBean.longitude}" styleClass="form-control"
+                                    required="true" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <h:commandButton value="Modifier" action="#{lieuBean.modifier()}"
+                            styleClass="btn btn-danger" />
+                    </div>
+                </h:form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div class="modal fade" id="deleteLieuModal" tabindex="-1" aria-labelledby="deleteLieuModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteLieuModalLabel">Attention</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body text-center">
+                    <i class="bi bi-exclamation-triangle-fill text-danger display-4 mb-3"></i>
+                    <p class="fs-5">Êtes-vous sûr de vouloir supprimer ce lieu ?</p>
+                    <p class="text-muted small">Cette action est irréversible.</p>
+                </div>
+
+                <h:form id="deleteForm">
+                    <h:inputHidden id="deleteId" value="#{lieuBean.id}" />
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <h:commandButton value="Supprimer" action="#{lieuBean.supprimer()}"
+                            styleClass="btn btn-danger px-4" />
+                    </div>
+                </h:form>
+
+            </div>
+        </div>
+    </div>
+
 </h:body>
+
 </html>
