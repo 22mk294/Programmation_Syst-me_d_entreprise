@@ -4,7 +4,13 @@
  */
 package com.jarkata.udbl.jakartamission.beans;
 
+import com.jarkata.udbl.jarkatamission.buisness.UtilisateurEntrepriseBean;
+import com.jarkata.udbl.jarkatamission.buisness.sessionManager;
+import com.jarkata.udbl.jarkatamission.entities.Utilisateur;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 
@@ -16,74 +22,53 @@ import jakarta.inject.Named;
 @Named
 
 public class WelcomeBean {
-
-    private String nom;
-    private Double montantUSD;
-    private Double montantIDR;
+    @Inject
+    private UtilisateurEntrepriseBean utilisateurBean;
+    
+    @Inject
+    private sessionManager sessionManager;
+    
+    private String email;
+    private String password;
     private String message;
-    private String messageidr;
 
-    private final double TAUX_IDR = 16000; 
-    // 1 USD = 16 000 IDR (modifiable)
-
-    // Getters et Setters
-    public String getNom() {
-        return nom; 
-    }
-    public void setNom(String nom) { 
-        this.nom = nom; 
+    public String getEmail() {
+        return email;
     }
 
-    public Double getMontantUSD() {
-        return montantUSD; 
-    }
-    public void setMontantUSD(Double montantUSD) {
-        this.montantUSD = montantUSD; 
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public Double getMontantIDR() { 
-        return montantIDR; 
+    public String getPassword() {
+        return password;
     }
-    public void setMontantIDR(Double montantIDR) { 
-        this.montantIDR = montantIDR; 
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getMessage() {
-        return message; 
+        return message;
     }
 
-    public String getMessageidr() {
-        return messageidr;
+    public void setMessage(String message) {
+        this.message = message;
     }
     
-    
-    
-    public void afficher(){
-        this.message = "Welcome to Indonesia dear " + this.nom;
-    }
-
-    public void convertir() {
-
-        if (montantUSD != null && montantUSD > 0) {
-            // USD → IDR
-            double resultat = montantUSD * TAUX_IDR;
-            message = "Montant "
-                    + montantUSD + " USD équivaut à "
-                    + resultat + " IDR.";
-        }
-        else {
-            message = "Veuillez entrer un montant valide en USD ou en IDR.";
+    public String sAuthentifier(){
+        Utilisateur utilisateur = utilisateurBean.authentifier(email, password);
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (utilisateur != null){
+                sessionManager.createSession("user", email);
+                sessionManager.createSession("username", utilisateur.getUsername());
+                return "home?faces-redirect=true";
+                
+            }else {
+            this.message="Email ou mot de passe incorrect.";
+                context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, message, null));
+                return null;
         }
     }
     
-    public void convertir_idr(){
-        if(montantIDR != null && montantIDR > 0) {
-            // IDR → USD
-            double resultat = montantIDR / TAUX_IDR;
-            messageidr = "Montant " + montantIDR + " IDR équivaut à " + resultat + " USD.";
-        }
-        else {
-            message = "Veuillez entrer un montant valide en USD ou en IDR.";
-        }
-    }
 }

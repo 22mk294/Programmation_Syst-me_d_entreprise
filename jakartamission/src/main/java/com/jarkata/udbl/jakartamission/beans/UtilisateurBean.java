@@ -13,6 +13,8 @@ import jakarta.inject.Named;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.jarkata.udbl.jarkatamission.buisness.sessionManager;
+import com.jarkata.udbl.jarkatamission.entities.Utilisateur;
 
 
 /**
@@ -45,6 +47,9 @@ public class UtilisateurBean {
     
      @Inject
     private UtilisateurEntrepriseBean utilisateurEntrepriseBean;
+
+    @Inject
+    private sessionManager sessionManager;
     
 
     public String getUsername() {
@@ -121,4 +126,41 @@ public class UtilisateurBean {
         confirmPassword = "";
         description = "";
     }
+
+    public void chargerProfil() {
+        String sessionEmail = sessionManager.getValueFromSession("user");
+        if (sessionEmail != null) {
+            Utilisateur u = utilisateurEntrepriseBean.trouverUtilisateurParEmail(sessionEmail);
+            if (u != null) {
+                this.username = u.getUsername();
+                this.email = u.getEmail();
+                this.description = u.getDescription();
+            }
+        }
+    }
+
+    public void modifierProfil() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        String sessionEmail = sessionManager.getValueFromSession("user");
+        
+        if (sessionEmail == null) {
+             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Erreur Session: Utilisateur non connecté", null));
+             return;
+        }
+
+        if (password != null && !password.isEmpty() && !password.equals(confirmPassword)) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Les mots de passe ne correspondent pas", null));
+            return;
+        }
+        
+        utilisateurEntrepriseBean.modifierUtilisateur(sessionEmail, password, description);
+        
+        context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Profil mis à jour avec succès", null));
+    }
+
+    public String deconnexion() {
+        sessionManager.invalidateSession();
+        return "/index?faces-redirect=true";
+    }
+    
 }
