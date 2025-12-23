@@ -25,6 +25,16 @@ public class NavigationBean {
         }
     }
     
+    public void redirection(String destination){
+        try {
+            FacesContext.getCurrentInstance().getExternalContext()
+                    .redirect(destination);
+        } catch (IOException ex) {
+            Logger.getLogger(NavigationBean.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+    }
+    
     //navigation vers lieu
     public void ajouterLieu(){
         try {
@@ -34,5 +44,9 @@ public class NavigationBean {
             Logger.getLogger(NavigationBean.class.getName())
                     .log(Level.SEVERE, "Erreur lors de la navigation", ex);
         }
+        
+    }
+    public void voirVisite(){
+        this.redirection("pages/visite.xhtml");
     }
 }

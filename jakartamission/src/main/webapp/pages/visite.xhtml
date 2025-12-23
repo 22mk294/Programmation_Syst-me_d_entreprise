@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html" xmlns:f="jakarta.faces.core">
+<h:head>
+    <title>Visite de Lieux</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+</h:head>
+<h:body class="bg-light">
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">UDBL - Visite de Lieux</a>
+        </div>
+    </nav>
+
+    <!-- PAGE -->
+    <div class="container mt-5">
+        <div class="card shadow p-4 mb-4">
+            <h2 class="mb-4">Sélectionner un lieu :</h2>
+
+            <h:form id="visiteForm">
+                <div class="mb-3">
+                    <label for="lieuSelect" class="form-label">Lieu</label>
+                    <h:selectOneMenu id="lieuSelect" value="#{lieuBean.selectedLieu}" styleClass="form-select">
+                        <f:selectItem itemLabel="Choisissez un lieu" itemValue="" noSelectionOption="true" />
+                        <f:selectItems value="#{lieuBean.lieux}" var="lieu" itemValue="#{lieu.id}"
+                            itemLabel="#{lieu.nom}" />
+                        <f:ajax listener="#{lieuBean.updateWeatherMessage}" render="weather" />
+                    </h:selectOneMenu>
+                </div>
+
+                <!-- Affichage de la météo -->
+                <h:panelGroup id="weather">
+                    <div class="mt-4">
+                        <h5 class="mb-3">Informations Météo</h5>
+                        <h:panelGroup rendered="#{not empty lieuBean.weatherMessage}">
+                            <div class="alert alert-info" role="alert">
+                                <h:outputText value="#{lieuBean.weatherMessage}" escape="false" />
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{empty lieuBean.weatherMessage}">
+                            <div class="alert alert-secondary" role="alert">
+                                <em>Sélectionnez un lieu pour voir les informations météo</em>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Bouton "Visiter" -->
+                <div class="mt-4">
+                    <h:commandLink value="Visiter ce lieu"
+                        action="#{visiteBean.afficherFormulaireVisite(lieuBean.selectedLieu)}"
+                        styleClass="btn btn-danger btn-lg">
+                    </h:commandLink>
+                    <h:commandButton value="Retour à l'accueil" action="/home" immediate="true"
+                        styleClass="btn btn-outline-danger btn-lg ms-2" />
+                </div>
+            </h:form>
+        </div>
+
+        <!-- Historique des visites -->
+        <div class="card shadow p-4">
+            <h3 class="mb-4">Mon Historique de Visites</h3>
+            <h:dataTable value="#{visiteBean.mesVisites}" var="v" styleClass="table table-striped table-hover">
+                <h:column>
+                    <f:facet name="header">Lieu</f:facet>
+                    #{v.lieu.nom}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Date de visite</f:facet>
+                    <h:outputText value="#{v.dateVisite}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                    </h:outputText>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Durée (h)</f:facet>
+                    #{v.tempsPasse}
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Dépense</f:facet>
+                    #{v.depense} $
+                </h:column>
+                <h:column>
+                    <f:facet name="header">Observation</f:facet>
+                    #{v.observation}
+                </h:column>
+            </h:dataTable>
+            <h:panelGroup rendered="#{empty visiteBean.mesVisites}">
+                <div class="alert alert-warning">
+                    Vous n'avez pas encore enregistré de visites.
+                </div>
+            </h:panelGroup>
+        </div>
+    </div>
+
+</h:body>
+
+</html>

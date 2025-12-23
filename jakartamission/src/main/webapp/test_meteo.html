@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test Service Météo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .error {
+            background-color: #ffebee;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #c82333;
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 150px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Test du Service Météo</h1>
+
+    <div class="info">
+        <h3>Configuration requise :</h3>
+        <ul>
+            <li>Le service j-weather doit être démarré sur <strong>http://localhost:8080/j-weather/</strong></li>
+            <li>Endpoint : <code>/webapi/JarkartaWeather</code></li>
+            <li>Paramètres : latitude et longitude</li>
+        </ul>
+    </div>
+
+    <div>
+        <h3>Tester le service :</h3>
+        <label>Latitude : <input type="number" id="latitude" value="-6.1751" step="0.0001" /></label>
+        <label>Longitude : <input type="number" id="longitude" value="106.8650" step="0.0001" /></label>
+        <br /><br />
+        <button onclick="testService()">Tester le service météo</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function testService() {
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+            const url = `http://localhost:8080/j-weather/webapi/JarkartaWeather?latitude=${latitude}&longitude=${longitude}`;
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="info">Appel en cours vers : <code>${url}</code></div>`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✓ Succès !</h3>
+                            <p><strong>Réponse du service :</strong></p>
+                            <pre>${data}</pre>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>✗ Erreur</h3>
+                            <p><strong>Message d'erreur :</strong> ${error.message}</p>
+                            <p><strong>Vérifications à faire :</strong></p>
+                            <ul>
+                                <li>Le service j-weather est-il démarré ?</li>
+                                <li>L'URL est-elle correcte : <code>http://localhost:8080/j-weather/</code> ?</li>
+                                <li>Y a-t-il des problèmes CORS ?</li>
+                                <li>Vérifiez les logs du serveur GlassFish</li>
+                            </ul>
+                        </div>
+                    `;
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -6,9 +6,13 @@ package com.jarkata.udbl.jakartamission.beans;
 
 import com.jarkata.udbl.jarkatamission.buisness.LieuEntrepriseBean;
 import com.jarkata.udbl.jarkatamission.entities.Lieu;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.view.ViewScoped;
+import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.MediaType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +22,7 @@ import java.util.List;
  * @author joelm
  */
 @Named(value = "lieuBean")
-@RequestScoped
+@ViewScoped
 public class LieuBean implements Serializable{
 
     private int id;
@@ -27,12 +31,23 @@ public class LieuBean implements Serializable{
     private double longitude;
     private double latitude;
     private final List<Lieu> lieux = new ArrayList<>();
+    private Integer selectedLieu;
 
     @Inject
     private LieuEntrepriseBean lieuEntrepriseBean;
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
+
+    public Integer getSelectedLieu() {
+        return selectedLieu;
+    }
+
+    public void setSelectedLieu(Integer selectedLieu) {
+        this.selectedLieu = selectedLieu;
+    }
+    
+    
 
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
@@ -77,5 +92,63 @@ public class LieuBean implements Serializable{
         description = null;
         latitude = 0.0;
         longitude = 0.0;
+    }
+    
+    private String weatherMessage = "";
+    
+    public void fetchWeatherMessage(Lieu l) {
+        if (l == null) {
+            this.weatherMessage = "Veuillez sélectionner un lieu valide.";
+            return;
+        }
+        
+        try {
+            // Appel au service web pour obtenir les données météorologiques
+            //String serviceURL = "http://localhost:8080/j-weather/webapi/JakartaWeather?latitude="
+              String serviceURL = "http://localhost:8080/j-weather/resources/JakartaWeather?latitude="
+                    + l.getLatitude() + "&longitude=" + l.getLongitude();
+            
+            System.out.println("Appel du service météo: " + serviceURL);
+            
+            Client client = ClientBuilder.newClient();
+            String response = client.target(serviceURL)
+                    .request(MediaType.TEXT_PLAIN)
+                    .get(String.class);
+            
+            // Enregistrement du message météo dans la variable weatherMessage
+            this.weatherMessage = response;
+            System.out.println("Réponse météo: " + response);
+            
+        } catch (Exception e) {
+            this.weatherMessage = "Erreur lors de la récupération de la météo: " + e.getMessage() + ". Vérifiez que le service j-weather est démarré sur http://localhost:8080/j-weather/";
+            System.err.println("Erreur météo: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    public void updateWeatherMessage(AjaxBehaviorEvent event) {
+        if (selectedLieu == null || selectedLieu == 0) {
+            this.weatherMessage = "Veuillez sélectionner un lieu.";
+            return;
+        }
+        
+        try {
+            Lieu lieu = lieuEntrepriseBean.trouverLieuParId(selectedLieu);
+            if (lieu != null) {
+                this.fetchWeatherMessage(lieu);
+            } else {
+                this.weatherMessage = "Lieu introuvable avec l'ID: " + selectedLieu;
+            }
+        } catch (Exception e) {
+            this.weatherMessage = "Erreur lors de la recherche du lieu: " + e.getMessage();
+            System.err.println("Erreur lors de updateWeatherMessage: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+ public String getWeatherMessage() {
+        return weatherMessage;
+    }
+    public void setWeatherMessage(String weatherMessage) {
+        this.weatherMessage = weatherMessage;
     }
 }
